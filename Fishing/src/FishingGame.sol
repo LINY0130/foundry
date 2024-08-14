@@ -54,6 +54,7 @@ contract FishingGame {
     function Mint() public returns(uint8[8] memory){
         (bool FishSignal,) = checkFishTime();
         uint8[8] memory CatchFish = [0,0,0,0,0,0,0,0];
+        FinalCatchFish = [0,0,0,0,0,0,0,0];
         if(FishSignal){
             uint i = 0;
             while ( i < 8 ){

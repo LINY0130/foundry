@@ -10,17 +10,16 @@ error MintPriceNotPaid();
 error MaxSupply();
 error NonExistentTokenURI();
 error WithdrawTransfer();
-error NoFishCaught();
 
 // enum Rarity { 
-    // NOFISH,
-//     COMMON,
-//     UNCOMMON,
-//     RARE,
-//     SUPER_RARE,
-//     EPIC,
-//     LEGENDARY,
-//     MYTHICAL
+    // NOFISH,      0
+//     COMMON,      1
+//     UNCOMMON,    2
+//     RARE,        3
+//     SUPER_RARE,  4
+//     EPIC,        5
+//     LEGENDARY,   6
+//     MYTHICAL     7
 // }
 
 contract NFT is ERC721, Ownable {
@@ -28,20 +27,14 @@ contract NFT is ERC721, Ownable {
     FishingGame public fishingGame;
     using Strings for uint256;
 
-    mapping(uint256 => Rarity) private tokenRarities;
+    mapping(address => uint8[8]) public tokenRarities;
 
     string public baseURI;
     uint256 public currentTokenId;
-    address public OwnerAdress;
+    // address public OwnerAddress;
+    address public UserAddress;
     // uint256 public constant TOTAL_SUPPLY = 10_000;
     uint256 public constant MINT_PRICE = 0.08 ether;
-    uint256 private Common_Counter = 0;
-    uint256 private Uncommon_Counter = 0;
-    uint256 private Rare_Counter = 0;
-    uint256 private Super_Rare_Counter = 0;
-    uint256 private Epic_Counter = 0;
-    uint256 private Legendary_Counter = 0;
-    uint256 private Mythical_Counter = 0;
 
     constructor(
         address _fishingGameAddress,
@@ -57,36 +50,16 @@ contract NFT is ERC721, Ownable {
         if (msg.value != MINT_PRICE) {
             revert MintPriceNotPaid();
         }
-        tokenRarities[currentTokenId] = fishingGame.getCaughtFishRarity();
-        if (tokenRarities[currentTokenId] == Rarity.NOFISH){
-            revert NoFishCaught();
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.COMMON){
-            Common_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.UNCOMMON){
-            Uncommon_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.RARE){
-            Rare_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.SUPER_RARE){
-            Super_Rare_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.EPIC){
-            Epic_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.LEGENDARY){
-            Legendary_Counter += 1;
-        }
-        else if (tokenRarities[currentTokenId] == Rarity.MYTHICAL){
-            Mythical_Counter += 1;
-        }
+        UserAddress = recipient;
+        Rarity fishRarity = fishingGame.getCaughtFishRarity();
+        tokenRarities[recipient][uint(fishRarity)] += 1;          
+        require(fishRarity != Rarity.NOFISH, "NFT: No fish caught");
+
         uint256 newTokenId = ++currentTokenId;
         // if (newTokenId > TOTAL_SUPPLY) {
         //     revert MaxSupply();
         // }
-        currentTokenId = newTokenId;
+
         _safeMint(recipient, newTokenId);
         return newTokenId;
     }
@@ -103,8 +76,8 @@ contract NFT is ERC721, Ownable {
                     : "";
     }
 
-    function getFishStorage() public view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256){
-        return (Common_Counter, Uncommon_Counter, Rare_Counter, Super_Rare_Counter, Epic_Counter, Legendary_Counter, Mythical_Counter);
+    function getFishStorage() public view returns (uint8[8] memory){
+        return (tokenRarities[UserAddress]);
     }
 
     function withdrawPayments(address payable payee) external onlyOwner {
