@@ -124,7 +124,7 @@ contract FishingGame {
     }
 
     function calculateProbWithBait() private view returns(uint8[8] memory){
-        uint[7] memory Prob_With_Bait;
+        uint256[8] memory Prob_With_Bait;
         uint8[8] memory CatchFish = [0, 0, 0, 0, 0, 0, 0, 0];
         uint D = 2;
         // 1 <= x,y,z <= 7
@@ -143,16 +143,13 @@ contract FishingGame {
             Prob_With_Bait[j] = e;
             j +=1;
         }
-        // let totalProbSum: Int = 0;
-        // for (int t = 2; t < 8; t++){ totalProbSum += self.Prob_With_Bait.get(t); }
-        // self.Prob_With_Bait.set(0, 10000 - totalProbSum);
 
-        uint256 Uncommon = Prob_With_Bait[1] + Prob_With_Bait[2] + Prob_With_Bait[3] + Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6];
-        uint256 Rare = Prob_With_Bait[2] + Prob_With_Bait[3] + Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6];
-        uint256 Super_Rare = Prob_With_Bait[3] + Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6];
-        uint256 Epic = Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6];
-        uint256 Legendary = Prob_With_Bait[5] + Prob_With_Bait[6];
-        uint256 Mythical = Prob_With_Bait[6];
+        uint256 Uncommon = Prob_With_Bait[2] + Prob_With_Bait[3] + Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6] + Prob_With_Bait[7];
+        uint256 Rare = Prob_With_Bait[3] + Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6] + Prob_With_Bait[7];
+        uint256 Super_Rare = Prob_With_Bait[4] + Prob_With_Bait[5] + Prob_With_Bait[6] + Prob_With_Bait[7];
+        uint256 Epic = Prob_With_Bait[5] + Prob_With_Bait[6] + Prob_With_Bait[7];
+        uint256 Legendary = Prob_With_Bait[6] + Prob_With_Bait[7];
+        uint256 Mythical = Prob_With_Bait[7];
 
         //random number 1-10000，for use bait to determine if caught a fish or not；
         uint256 randomnumber10000 = _randomNumber(1, 10001);
