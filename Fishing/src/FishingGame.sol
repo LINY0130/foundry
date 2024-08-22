@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.25;
 
+import "./NFT.sol";
+
 enum Rarity { 
     NOFISH,
     COMMON,
@@ -19,8 +21,9 @@ contract FishingGame {
     uint[42] private Add_Prob;
     uint[3] private Bait;
     uint[8] public FinalCatchFish;
+    NFT public nftContract;
 
-    constructor() {
+    constructor(address _nftAddress) {
         startTime = 0;
         //First compare it to the Prob_Without_Bait[0] to determine if caught a fish or not
         Prob_Without_Bait[0] = 0;   //No Bait Use: 0
@@ -48,10 +51,11 @@ contract FishingGame {
         // mythical bait
         Add_Prob[36] = 400; Add_Prob[37] = 300; Add_Prob[38] = 200; Add_Prob[39] = 150; Add_Prob[40] = 100; Add_Prob[41] = 50;
         Bait = [0,0,0];
+        nftContract = NFT(_nftAddress);
     }
 
     //When user claim, call this function
-    function Mint() public returns(uint8[8] memory){
+    function UserCatchFish() public returns(uint8[8] memory){
         (bool FishSignal,) = checkFishTime();
         uint8[8] memory CatchFish = [0,0,0,0,0,0,0,0];
         FinalCatchFish = [0,0,0,0,0,0,0,0];
@@ -78,15 +82,21 @@ contract FishingGame {
             }
         }
         FinalCatchFish = CatchFish;
+        if (FinalCatchFish[0] != 1){
+            getCaughtFishRarity();
+            nftContract.mintToken(msg.sender);
+        }
         return CatchFish;
     }
 
     //When user passes the bait, call this function to save Bait and StartTime
+    //Need to ascending Sort before passing in the species values
     function passBait(uint species0, uint species1, uint species2) public {
+        require(species0 <= 7 && species1 <= 7 && species2 <= 7, "Species values must be between 0 and 7 inclusive");
         Bait = [species0, species1, species2];
-        setStartTime(); 
+        setStartTime();
     }
-    
+
     function setStartTime() public {
         startTime = block.timestamp;
     }
@@ -111,7 +121,7 @@ contract FishingGame {
     // Use Diminishing factor D*10
 
     function calculateProbWithoutBait() private view returns(uint8[8] memory){
-        uint256 randomNumber100 = _randomNumber(0, 100 + 1);
+        uint256 randomNumber100 = _randomNumber(1, 100 + 1);
         uint8[8] memory CatchFish = [0, 0, 0, 0, 0, 0, 0, 0];
         if     ( (0 < randomNumber100) && (randomNumber100 < 2) )    { CatchFish[7] = 1; }
         else if( (1 < randomNumber100) && (randomNumber100 < 4) )    { CatchFish[6] = 1; }
