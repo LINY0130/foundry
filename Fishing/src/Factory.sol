@@ -16,15 +16,23 @@ contract Factory is Ownable {
     }
 
     // Function to create a new NFT contract instance
-    function createNFTContract(string memory name, string memory symbol, string memory uri) public onlyOwner {
+    function _createNFTContract(string memory name, string memory symbol, string memory uri) private onlyOwner {
         NFT nft = new NFT(name, symbol, uri);
         nftContracts.push(address(nft));
     }
 
+    function createNFTContract(string memory name, string memory symbol, string memory uri) public {
+        _createNFTContract(name, symbol, uri);
+    }
+
     // Function to create a new FishingGame contract instance
-    function createFishingGameContract() public onlyOwner {
+    function _createFishingGameContract() private onlyOwner {
         FishingGame game = new FishingGame();
         fishingGames.push(address(game));
+    }
+
+    function createFishingGameContract() public {
+        _createFishingGameContract();
     }
 
     // Function to get the length of the nftContracts array

@@ -9,23 +9,27 @@ import "../src//Factory.sol";
 contract FishingGameTest is Test {
     FishingGame public fishingGame;
     NFT public nftContract;
+    Factory public factory;
     uint[] public setSpecies;
     address public testowner = address(this);
     
     function setUp() public {
-        Factory factory = new Factory(testowner);
+        factory = new Factory(testowner);
         console.log("Owner address: ", factory.owner());
         assertEq(factory.owner(), address(this), "Factory owner should be the same as the test owner");
 
         factory.createNFTContract("MyNFT", "MNT", "");
         factory.createFishingGameContract();
+    }
 
+    function getFirstCreateContracts() public {
         address nftAddress = factory.getnewNFTAddress();
         address gameAddress = factory.getnewFishingGameAddress();
 
         nftContract = NFT(nftAddress);
         fishingGame = FishingGame(gameAddress);
     }
+        
 
     function _randomNumber(uint256 min, uint256 max) internal view returns (uint256) {
         return uint256(keccak256(abi.encodePacked(block.timestamp))) % (max - min) + min;
@@ -60,6 +64,7 @@ contract FishingGameTest is Test {
     }
 
     function test_UserCatchFishWithBait() public {
+        getFirstCreateContracts();
         // use bait;
         bool caughtFish = false;
         getBait();
@@ -97,6 +102,7 @@ contract FishingGameTest is Test {
     }
 
     function test_UserCatchFishWithoutBait() public {
+        getFirstCreateContracts();
         // no bait use
         fishingGame.passBait(0,0,0);
 
