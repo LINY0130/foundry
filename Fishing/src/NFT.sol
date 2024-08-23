@@ -6,6 +6,7 @@ import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "../lib/openzeppelin-contracts/contracts/access/AccessControl.sol";
 import "./FishingGame.sol";
+import "./Factory.sol";
 
 error MaxSupply();
 error NonExistentTokenURI();
@@ -25,6 +26,7 @@ error WithdrawTransfer();
 contract NFT is ERC721, Ownable, AccessControl {
 
     FishingGame public fishingGame;
+    Factory public factory;
     using Strings for uint256;
 
     //every user has he's fish types;
@@ -40,14 +42,15 @@ contract NFT is ERC721, Ownable, AccessControl {
     // uint256 public constant TOTAL_SUPPLY = 10_000;
 
     constructor(
-        address _fishingGameAddress,
         string memory _name,
         string memory _symbol,
         string memory _baseURI
     ) ERC721(_name, _symbol) Ownable(msg.sender) {
         grantRole(MINTER_ROLE, msg.sender);
-        fishingGame = FishingGame(_fishingGameAddress);
         baseURI = _baseURI;
+        factory = Factory(msg.sender);//factory address
+        address fishingGameAddress = factory.getnewNFTAddress();
+        fishingGame = FishingGame(fishingGameAddress);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl) returns (bool) {

@@ -8,23 +8,38 @@ import "./FishingGame.sol";
 contract Factory is Ownable {
     address[] public nftContracts;
     address[] public fishingGames;
-    address public addressFishingGames;
-    address public addressNftContract;
 
-    constructor() Ownable(msg.sender) {}
+    constructor(address _owner) Ownable(_owner) {}
 
     // Function to create a new NFT contract instance
     function createNFTContract(string memory name, string memory symbol, string memory uri) public onlyOwner {
-        NFT nft = new NFT(addressFishingGames, name, symbol, uri);
+        NFT nft = new NFT(name, symbol, uri);
         nftContracts.push(address(nft));
-        addressNftContract = address(nft);
     }
 
     // Function to create a new FishingGame contract instance
     function createFishingGameContract() public onlyOwner {
-        FishingGame game = new FishingGame(addressNftContract);
+        FishingGame game = new FishingGame();
         fishingGames.push(address(game));
-        addressFishingGames = address(game);
     }
 
+    // Function to get the length of the nftContracts array
+    function nftContractsLength() public view returns (uint256) {
+        return nftContracts.length;
+    }
+
+    // Function to get the length of the fishingGames array
+    function fishingGamesLength() public view returns (uint256) {
+        return fishingGames.length;
+    }
+
+    //find the fishingGame address
+    function getnewFishingGameAddress() public view returns (address) {
+        return fishingGames[fishingGames.length - 1];
+    }
+
+    //find the nftContracts address
+    function getnewNFTAddress() public view returns (address) {
+        return nftContracts[nftContracts.length - 1];
+    }
 }

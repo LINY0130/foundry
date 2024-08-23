@@ -3,16 +3,27 @@ pragma solidity ^0.8.13;
 
 import {Test, console} from "../lib/forge-std/src/Test.sol";
 import {FishingGame} from "../src/FishingGame.sol";
+import {NFT} from "../src/NFT.sol";
+import "../src//Factory.sol";
 
-contract FishingTest is Test {
+contract FishingGameTest is Test {
     FishingGame public fishingGame;
+    NFT public nftContract;
+    address public owner;
     uint[] public setSpecies;
     
-    //考虑写两个测试，一个pass000，另一个pass有值的。
     function setUp() public {
-        fishingGame = new FishingGame(0x0000000000000000000000000000000000000000);
-        getBait();
-        fishingGame.passBait(setSpecies[0], setSpecies[1], setSpecies[2]);
+        owner = address(this);
+        Factory factory = new Factory(owner);
+
+        factory.createNFTContract("MyNFT", "MNT", "");
+        factory.createFishingGameContract();
+
+        address nftAddress = factory.getnewNFTAddress();
+        address gameAddress = factory.getnewFishingGameAddress();
+
+        nftContract = NFT(nftAddress);
+        fishingGame = FishingGame(gameAddress);
     }
 
     function _randomNumber(uint256 min, uint256 max) internal view returns (uint256) {
@@ -21,9 +32,9 @@ contract FishingTest is Test {
 
     function getBait() internal {
         uint[] memory species;
-        species[0] = _randomNumber(0,8);
-        species[1] = _randomNumber(0,8);
-        species[2] = _randomNumber(0,8);
+        species[0] = _randomNumber(1,8);
+        species[1] = _randomNumber(1,8);
+        species[2] = _randomNumber(1,8);
         setSpecies = arrange(species);
     }
     
@@ -47,16 +58,65 @@ contract FishingTest is Test {
         return arr;
     }
 
+    function test_UserCatchFishWithBait() public {
+        // use bait;
+        bool caughtFish = false;
+        getBait();
+        fishingGame.passBait(setSpecies[0], setSpecies[1], setSpecies[2]);
+        uint8[8] memory catchFish = fishingGame.UserCatchFish();
+        for (uint8 i = 1; i < 8; i++) {
+            if (catchFish[i] == 1) {
+                caughtFish = true;
+                break;
+            }
+        }
+        bool FishSignal;
+        bool Fishlost;
+        //time pass less than 7200 , nofish caught
+        vm.warp(block.timestamp + 7198); 
+        (FishSignal, Fishlost) = fishingGame._checkFishTime();
+        assertEq(caughtFish, false, "Should not catch any fish because no enough time");
+        assertEq(FishSignal, false, "Should not catch any fish because no enough time");
+        assertEq(Fishlost, false, "No fish lost");
+        assertEq(nftContract.balanceOf(address(this)), 0, "NFT should not be minted upon not enough time");
+        //time pass over 14400 , fish must caught
+        vm.warp(block.timestamp + 14402);
+        (FishSignal, Fishlost) = fishingGame._checkFishTime();
+        assertEq(caughtFish, true, "Should catch at least one fish with bait");
+        assertEq(FishSignal, true, "Should catch at least one fish with bait");
+        assertEq(Fishlost, false, "No fish lost");
+        assertEq(nftContract.balanceOf(address(this)), 1, "NFT should be minted upon catching a fish");
+        //time pass over 25200 , fish must lost
+        vm.warp(block.timestamp + 25203);
+        (FishSignal, Fishlost) = fishingGame._checkFishTime();
+        assertEq(caughtFish, false, "Over time and fish lost");
+        assertEq(FishSignal, false, "Over time and fish lost");
+        assertEq(Fishlost, true, "Over time and fish lost");
+        assertEq(nftContract.balanceOf(address(this)), 0, "NFT should not be minted upon not enough time");
+    }
 
-    // function test_Increment() public {
-    //     counter.increment();
-    //     assertEq(counter.number(), 1);
-    // }
+    function test_UserCatchFishWithoutBait() public {
+        // no bait use
+        fishingGame.passBait(0,0,0);
 
-    // function testFuzz_SetNumber(uint256 x) public {
-    //     counter.setNumber(x);
-    //     assertEq(counter.number(), x);
-    // }
+        uint256 trials = 10000; // 1000times
+        uint256 caughtFishCount = 0; // times for successfully catching a fish
 
+        for (uint256 i = 0; i < trials; i++) {
+            uint8[8] memory catchFish = fishingGame.UserCatchFish();
+
+            for (uint8 j = 1; j < 8; j++) {
+                if (catchFish[j] == 1) {
+                    caughtFishCount++;
+                    break;
+                }
+            }
+        }
+
+        uint256 caughtFishPercentage = caughtFishCount * 100 / trials;
+
+        // Verify that the percentage of fish caught is close to 50 per cent
+        assertEq(caughtFishPercentage >= 45 && caughtFishPercentage <= 55, true, "Caught fish percentage should be around 50%");
+    }
 
 }

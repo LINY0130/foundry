@@ -2,6 +2,7 @@
 pragma solidity ^0.8.25;
 
 import "./NFT.sol";
+import "./Factory.sol";
 
 enum Rarity { 
     NOFISH,
@@ -22,8 +23,9 @@ contract FishingGame {
     uint[3] private Bait;
     uint[8] public FinalCatchFish;
     NFT public nftContract;
+    Factory public factory;
 
-    constructor(address _nftAddress) {
+    constructor() {
         startTime = 0;
         //First compare it to the Prob_Without_Bait[0] to determine if caught a fish or not
         Prob_Without_Bait[0] = 0;   //No Bait Use: 0
@@ -51,7 +53,9 @@ contract FishingGame {
         // mythical bait
         Add_Prob[36] = 400; Add_Prob[37] = 300; Add_Prob[38] = 200; Add_Prob[39] = 150; Add_Prob[40] = 100; Add_Prob[41] = 50;
         Bait = [0,0,0];
-        nftContract = NFT(_nftAddress);
+        factory = Factory(msg.sender);//factory address
+        address nftAddress = factory.getnewFishingGameAddress();
+        nftContract = NFT(nftAddress);
     }
 
     //When user claim, call this function
@@ -114,6 +118,10 @@ contract FishingGame {
         }
 
         return (FishSignal, FishLost);
+    }
+
+    function _checkFishTime() public view returns(bool, bool) {
+        return checkFishTime();
     }
 
     // Calculate the Prob_With_Bait and store in the array
