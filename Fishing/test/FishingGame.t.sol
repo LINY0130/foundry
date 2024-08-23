@@ -9,12 +9,13 @@ import "../src//Factory.sol";
 contract FishingGameTest is Test {
     FishingGame public fishingGame;
     NFT public nftContract;
-    address public owner;
     uint[] public setSpecies;
+    address public testowner = address(this);
     
     function setUp() public {
-        owner = address(this);
-        Factory factory = new Factory(owner);
+        Factory factory = new Factory(testowner);
+        console.log("Owner address: ", factory.owner());
+        assertEq(factory.owner(), address(this), "Factory owner should be the same as the test owner");
 
         factory.createNFTContract("MyNFT", "MNT", "");
         factory.createFishingGameContract();

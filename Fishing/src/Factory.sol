@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.25;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "./NFT.sol";
 import "./FishingGame.sol";
+
+event OwnerSet(address indexed owner);
 
 contract Factory is Ownable {
     address[] public nftContracts;
     address[] public fishingGames;
 
-    constructor(address _owner) Ownable(_owner) {}
+    constructor(address _owner) Ownable(_owner) {
+        emit OwnerSet(_owner);
+    }
 
     // Function to create a new NFT contract instance
     function createNFTContract(string memory name, string memory symbol, string memory uri) public onlyOwner {
