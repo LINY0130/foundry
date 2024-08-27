@@ -11,15 +11,20 @@ contract FishingGameTest is Test {
     NFT public nftContract;
     Factory public factory;
     uint[] public setSpecies;
-    address public testowner = address(this);
     
     function setUp() public {
-        factory = new Factory(testowner);
+        factory = new Factory();
         console.log("Owner address: ", factory.owner());
         assertEq(factory.owner(), address(this), "Factory owner should be the same as the test owner");
 
         factory.createNFTContract("MyNFT", "MNT", "");
+        console.log("NFT address: ", factory.getnewNFTAddress());
+        assertEq(factory.nftContractsLength(), 1, "There should be one NFT contract deployed");
+        assertEq(factory.getnewNFTAddress(), factory.nftContracts(0), "The latest NFT address should match the first element in nftContracts");
         factory.createFishingGameContract();
+        console.log("FishingGame address: ", factory.getnewFishingGameAddress());
+        assertEq(factory.fishingGamesLength(), 1, "There should be one FishingGame contract deployed");
+        assertEq(factory.getnewFishingGameAddress(), factory.fishingGames(0), "The latest FishingGame address should match the first element in fishingGames");
     }
 
     function getFirstCreateContracts() public {

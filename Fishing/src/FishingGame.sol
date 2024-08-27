@@ -25,7 +25,7 @@ contract FishingGame {
     NFT public nftContract;
     Factory public factory;
 
-    constructor() {
+    constructor(address _factoryAddress) {
         startTime = 0;
         //First compare it to the Prob_Without_Bait[0] to determine if caught a fish or not
         Prob_Without_Bait[0] = 0;   //No Bait Use: 0
@@ -53,7 +53,7 @@ contract FishingGame {
         // mythical bait
         Add_Prob[36] = 400; Add_Prob[37] = 300; Add_Prob[38] = 200; Add_Prob[39] = 150; Add_Prob[40] = 100; Add_Prob[41] = 50;
         Bait = [0,0,0];
-        factory = Factory(msg.sender);//factory address
+        factory = Factory(_factoryAddress);//factory address
         address nftAddress = factory.getnewFishingGameAddress();
         nftContract = NFT(nftAddress);
     }

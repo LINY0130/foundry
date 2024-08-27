@@ -44,13 +44,17 @@ contract NFT is ERC721, Ownable, AccessControl {
     constructor(
         string memory _name,
         string memory _symbol,
-        string memory _baseURI
+        string memory _baseURI,
+        address _factoryAddress
     ) ERC721(_name, _symbol) Ownable(msg.sender) {
-        grantRole(MINTER_ROLE, msg.sender);
         baseURI = _baseURI;
-        factory = Factory(msg.sender);//factory address
+        factory = Factory(_factoryAddress);//factory address
         address fishingGameAddress = factory.getnewNFTAddress();
         fishingGame = FishingGame(fishingGameAddress);
+    }
+
+    function grantMinterRole(address account) external onlyOwner {
+        grantRole(MINTER_ROLE, account);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl) returns (bool) {
